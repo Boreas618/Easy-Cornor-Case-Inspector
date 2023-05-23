@@ -1,6 +1,8 @@
 import json
 import datetime
 from area import Area, CutLine
+from preprocessing import interpolation, slope
+from kmeans import find_outliers
 
 
 class AreaA(Area):
@@ -29,7 +31,7 @@ if __name__ == '__main__':
     data.sort(key=lambda x: x['time_meas'])
 
     area_a = AreaA([CutLine([-100, -210], [-60, -230])], 1)
-    trajectory = dict()
+    trajectories = dict()
     time = dict()
 
     for item in data:
@@ -40,10 +42,10 @@ if __name__ == '__main__':
         if not area_a.is_in_area([x, y]):
             continue
 
-        if trajectory.get(item['id']) is None:
-            trajectory[item['id']] = [(x, y)]
+        if trajectories.get(item['id']) is None:
+            trajectories[item['id']] = [(x, y)]
         else:
-            trajectory[item['id']].append((x, y))
+            trajectories[item['id']].append((x, y))
 
         if time.get(item['id']) is None:
             # get the time and convert it from UNIX timestamp to datetime
@@ -53,19 +55,18 @@ if __name__ == '__main__':
             utc_time = datetime.datetime.utcfromtimestamp(item['time_meas'] / 1000000)
             time[item['id']].append(utc_time)
 
-    count_child_set_1 = 0
-    count_child_set_2 = 0
-    count = 0
+    filtered_trajectories = dict()
+    for i in trajectories.keys():
+        if len(trajectories[i]) > 11 or len(trajectories[i]) < 5:
+            continue
+        filtered_trajectories[i] = trajectories[i]
 
-    for i in trajectory.keys():
-        if len(trajectory[i]) < 10:
-            count_child_set_1 += 1
-        if 10 <= len(trajectory[i]) <= 100:
-            count_child_set_2 += 1
-        count += 1
+    interpolation(filtered_trajectories, 11)
+    slopes = slope(filtered_trajectories, 10)
 
-    print(count_child_set_1 / count)
-    print(count_child_set_2 / count)
-    print(count)
+    print(trajectories[320933284])
+    outliers = find_outliers(slopes, 3, 0.05)
+
+    print(outliers)
 
 
