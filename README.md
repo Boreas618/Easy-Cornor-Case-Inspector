@@ -3,6 +3,11 @@
 
 This is the backend for the Eash Conor Case Inspector. It is a FastAPI application that supports discovering conor cases for autonomous driving from transportation data.
 
+## Feature
+
+* Automatically filter trajectory outliers
+* Inspect sharp (de)accelerations
+* [ToDo]
 
 ## Installation
 
